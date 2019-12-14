@@ -5,15 +5,18 @@
 #include "smprintf.h"
 #include "stdlib.h"
 #include "string.h"
+#include "time.h"
 
 /* Main window class and title */
 static const char MainWndClass[] = "Falling Arrows";
 
-#define TIMER_REGULAR_ID 1
+#define DROP_SPEED_TIMER 1
 #define STATUS_TEXT_LENGTH 20
 #define ARROW_COORD 19
 #define DROP_SPEED 200
 
+#define TOTAL_TIME 30
+#define INSTRUCTIONS "Press F2 to start/stop"
 static char hitStatusText[STATUS_TEXT_LENGTH];
 
 int score = 0;
@@ -31,6 +34,25 @@ int hitMissBlank = 0;
 //1: Hit
 //2: Miss
 
+int gameStarted = 0;
+
+time_t startTime;
+
+void startGame(HWND hWnd){
+  printf("Game Started\n");
+  gameStarted = 1;
+  time(&startTime);
+  memset(fallingArrows, 10, ARROW_COORD*sizeof(int));
+  SetTimer(hWnd, DROP_SPEED_TIMER, DROP_SPEED, NULL);
+}
+
+void stopGame(HWND hWnd){
+  printf("Game stopped\n");
+  gameStarted = 0;
+  KillTimer(hWnd, DROP_SPEED_TIMER);
+  
+}
+
 /* Window procedure for our main window */
 LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -40,22 +62,25 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
   HBRUSH hBrush; 
   int i;
   int yCoord;
+  static time_t currentTime;
 
   char scoreString[5] = "0";
+  char timeRemainingString[3];
   
+  time(&currentTime);
   
   switch (msg)
   {
     case WM_CREATE:
       printf("Created\n");
-      SetTimer(hWnd, TIMER_REGULAR_ID, DROP_SPEED, NULL);
       memset(fallingArrows, 10, ARROW_COORD*sizeof(int));
+      time(&startTime);
 
       return 0;
 
     case WM_TIMER:
       switch(wParam){
-        case TIMER_REGULAR_ID:
+        case DROP_SPEED_TIMER:
 
         if(stateOfLastAction == 2 || 
           (stateOfLastAction == 0 && (fallingArrows[1] < 4))) {
@@ -68,7 +93,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         //Score 
         if(stateOfLastAction == 1){
-          score++;
+          score += 2;
           hitMissBlank = 1;
         }
 
@@ -83,6 +108,11 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
 
         fallingArrows[ARROW_COORD - 1] = rand() % 8;
+
+        if((currentTime - startTime) >= TOTAL_TIME){
+          stopGame(hWnd);
+        }
+
 
         break;
       }
@@ -113,7 +143,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
     case WM_PAINT:
         hdc = BeginPaint(hWnd, &ps);
-
+        TextOut(hdc, 25, 400, INSTRUCTIONS, strlen(INSTRUCTIONS));
         switch(hitMissBlank){
           case 0: 
             TextOut(hdc, 10, 10, "        ", 8);
@@ -158,52 +188,69 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         }
 
+        sprintf(timeRemainingString, "%02d", TOTAL_TIME - (currentTime - startTime));
+        printf("%s\n", timeRemainingString);
+        TextOut(hdc, 10, 30, timeRemainingString, strlen(timeRemainingString));
         return 0;
 
      case WM_KEYDOWN:
 
-        if (wParam == VK_LEFT){
-          printf("Pressed left\n");
-          if(fallingArrows[1] == 0){
-            printf("Left Hit");
-            stateOfLastAction = 1;
+        if(wParam == VK_F2){
+
+          if(gameStarted){
+            stopGame(hWnd);
           } else {
-            printf("Left Miss");
-            stateOfLastAction = 2;
+            startGame(hWnd);
           }
 
-        } else if (wParam == VK_RIGHT){
-          printf("Pressed right\n");
+        }
 
-          if(fallingArrows[1] == 1){
-            printf("Right Hit");
-            stateOfLastAction = 1;
+        if(gameStarted){
+
+          if (wParam == VK_LEFT){
+            printf("Pressed left\n");
+            if(fallingArrows[1] == 0){
+              printf("Left Hit");
+              stateOfLastAction = 1;
+            } else {
+              printf("Left Miss");
+              stateOfLastAction = 2;
+            }
+
+          } else if (wParam == VK_RIGHT){
+            printf("Pressed right\n");
+
+            if(fallingArrows[1] == 1){
+              printf("Right Hit");
+              stateOfLastAction = 1;
+            } else {
+              printf("Right Miss");
+              stateOfLastAction = 2;
+            }
+          } else if (wParam == VK_UP){
+            printf("Pressed up\n"); 
+    
+            if(fallingArrows[1] == 2){
+              printf("Up Hit");
+              stateOfLastAction = 1;
+            } else {
+              printf("Up Miss");
+              stateOfLastAction = 2;
+            }
+          } else if (wParam == VK_DOWN) {
+            printf("Pressed down\n");
+            if(fallingArrows[1] == 3){
+              printf("Down Hit");
+              stateOfLastAction = 1;
+            } else {
+              printf("Down Miss");
+              stateOfLastAction = 2;
+            }
+
           } else {
-            printf("Right Miss");
-            stateOfLastAction = 2;
+            printf("Arrow keys only la");
+            stateOfLastAction = 0;
           }
-        } else if (wParam == VK_UP){
-           printf("Pressed up\n"); 
-  
-          if(fallingArrows[1] == 2){
-            printf("Up Hit");
-            stateOfLastAction = 1;
-          } else {
-            printf("Up Miss");
-            stateOfLastAction = 2;
-          }
-        } else if (wParam == VK_DOWN) {
-          printf("Pressed down\n");
-          if(fallingArrows[1] == 3){
-            printf("Down Hit");
-            stateOfLastAction = 1;
-          } else {
-            printf("Down Miss");
-            stateOfLastAction = 2;
-          }
-        } else {
-          printf("Arrow keys only la");
-          stateOfLastAction = 0;
         }
 
         InvalidateRect(hWnd, NULL, FALSE);
