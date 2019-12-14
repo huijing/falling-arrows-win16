@@ -12,7 +12,7 @@ static const char MainWndClass[] = "Falling Arrows";
 #define TIMER_REGULAR_ID 1
 #define STATUS_TEXT_LENGTH 20
 #define ARROW_COORD 19
-#define DROP_SPEED 1000
+#define DROP_SPEED 200
 
 static char hitStatusText[STATUS_TEXT_LENGTH];
 
@@ -129,8 +129,8 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         sprintf(scoreString, "%04d", score);
 
         TextOut(hdc, 140, 10, scoreString, strlen(scoreString));
-
-        SetRect(&targetRect, 90, 360, 110, 380);
+        hBrush = CreateSolidBrush(RGB(255, 0, 0));
+        SetRect(&targetRect, 90, 358, 110, 378);
         FrameRect(hdc, &targetRect, hBrush);
 
 
@@ -271,7 +271,7 @@ BOOL RegisterMainWindowClass()
 HWND CreateMainWindow()
 {
   /* Create instance of main window */
-  HWND hWnd = CreateWindowEx(0, MainWndClass, MainWndClass, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 200, 440,
+  HWND hWnd = CreateWindowEx(0, MainWndClass, MainWndClass, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 200, 480,
                              NULL, NULL, g_hInstance, NULL);
 
   if (hWnd)
