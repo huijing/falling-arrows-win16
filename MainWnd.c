@@ -41,6 +41,7 @@ time_t startTime;
 void startGame(HWND hWnd){
   printf("Game Started\n");
   gameStarted = 1;
+  score = 0;
   time(&startTime);
   memset(fallingArrows, 10, ARROW_COORD*sizeof(int));
   SetTimer(hWnd, DROP_SPEED_TIMER, DROP_SPEED, NULL);
