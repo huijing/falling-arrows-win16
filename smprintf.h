@@ -1,6 +1,6 @@
 #ifndef smprintf
 #define smprintf
-// yeokm1 modified with putDebugChar
+/* yeokm1 modified with putDebugChar */
 
 /*
     Copyright 2001 Georges Menie
