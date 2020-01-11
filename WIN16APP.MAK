@@ -10,7 +10,7 @@ D_RCDEFINES = /d_DEBUG
 R_RCDEFINES = /dNDEBUG 
 ORIGIN = MSVC
 ORIGIN_VER = 1.00
-PROJPATH = Y:\WIN16SSH\
+PROJPATH = J:\SSH\
 USEMFC = 0
 CC = cl
 CPP = cl
@@ -54,21 +54,22 @@ SBRS = ABOUTDLG.SBR \
 		WINMAIN.SBR
 
 
-ABOUTDLG_DEP = y:\win16ssh\aboutdlg.h \
-	y:\win16ssh\globals.h
+ABOUTDLG_DEP = j:\ssh\aboutdlg.h \
+	j:\ssh\globals.h
 
 
-MAINWND_DEP = y:\win16ssh\aboutdlg.h \
-	y:\win16ssh\globals.h \
-	y:\win16ssh\mainwnd.h
+MAINWND_DEP = j:\ssh\aboutdlg.h \
+	j:\ssh\globals.h \
+	j:\ssh\mainwnd.h \
+	j:\ssh\smprintf.h
 
 
-RESOURCE_RCDEP = y:\win16ssh\app.ico \
-	y:\win16ssh\win16app.ver
+RESOURCE_RCDEP = j:\ssh\app.ico \
+	j:\ssh\win16app.ver
 
 
-WINMAIN_DEP = y:\win16ssh\globals.h \
-	y:\win16ssh\mainwnd.h
+WINMAIN_DEP = j:\ssh\globals.h \
+	j:\ssh\mainwnd.h
 
 
 all:	$(PROJ).EXE $(PROJ).BSC

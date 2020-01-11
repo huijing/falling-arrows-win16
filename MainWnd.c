@@ -6,24 +6,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <mmsystem.h>
-
-#pragma comment(lib, "winmm.lib")
 
 /* Main window class and title */
 static const char MainWndClass[] = "Falling Arrows";
 
 #define DROP_SPEED_TIMER 1
-#define STATUS_TEXT_LENGTH 20
-#define ARROW_COORD 19
 #define DROP_SPEED 200
 #define TOTAL_TIME 30
+#define STATUS_TEXT_LENGTH 20
+#define ARROW_COORD 19
 #define INSTRUCTIONS "Press F2 to start/stop"
 
 static char hitStatusText[STATUS_TEXT_LENGTH];
 
 int score = 0;
-int fallingArrows[ARROW_COORD] = {0};;
+int fallingArrows[ARROW_COORD] = {0};
 int arrowPositionForIndex[ARROW_COORD] = {380, 360, 340, 320, 300, 280, 260, 240, 220, 200, 180, 160, 140, 120, 100, 80, 60, 40, 20};
 /* stateOfLastAction (to keep state of last user action)
    0: Initial
@@ -86,68 +83,42 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         case WM_TIMER:
         {
-            switch(wParam)
+            if (stateOfLastAction == 2 || (stateOfLastAction == 0 && (fallingArrows[1] < 4)))
             {
-                case DROP_SPEED_TIMER:
-                    if (stateOfLastAction == 2 || (stateOfLastAction == 0 && (fallingArrows[1] < 4)))
-                    {
-                        hitMissBlank = 2;
-                        if (score > 0)
-                        {
-                            score--;
-                        }
-                    } 
+                hitMissBlank = 2;
+                if (score > 0)
+                {
+                    score--;
+                }
+            } 
 
-                    if (stateOfLastAction == 1)
-                    {
-                        score += 2;
-                        hitMissBlank = 1;
-                    }
-
-                    if (stateOfLastAction == 0 && (fallingArrows[1] > 3))
-                    {
-                        hitMissBlank = 0;
-                    }
-
-                    stateOfLastAction = 0;
-
-                    for (i = 0; i < ARROW_COORD - 1; i++)
-                    {
-                        fallingArrows[i] = fallingArrows[i + 1];
-                    }
-
-                    fallingArrows[ARROW_COORD - 1] = rand() % 8;
-
-                    if ((currentTime - startTime) >= TOTAL_TIME)
-                    {
-                        stopGame(hWnd);
-                    }
-                    break;
+            if (stateOfLastAction == 1)
+            {
+                score += 2;
+                hitMissBlank = 1;
             }
+
+            if (stateOfLastAction == 0 && (fallingArrows[1] > 3))
+            {
+                hitMissBlank = 0;
+            }
+
+            stateOfLastAction = 0;
+
+            for (i = 0; i < ARROW_COORD - 1; i++)
+            {
+                fallingArrows[i] = fallingArrows[i + 1];
+            }
+
+            fallingArrows[ARROW_COORD - 1] = rand() % 8;
+
+            if ((currentTime - startTime) >= TOTAL_TIME)
+            {
+                stopGame(hWnd);
+            }
+
             InvalidateRect(hWnd, NULL, FALSE);
             return 0;
-        }
-
-        case WM_COMMAND:
-        {
-            WORD id = wParam;
-
-            switch (id)
-            {
-                case ID_HELP_ABOUT:
-                {
-                    ShowAboutDialog(hWnd);
-                    printf("show Dialog\n");
-                    return 0;
-                }
-
-                case ID_FILE_EXIT:
-                {
-                    DestroyWindow(hWnd);
-                    return 0;
-                }
-            }
-            break;
         }
 
         case WM_PAINT:
@@ -226,82 +197,104 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             printf("%s\n", timeRemainingString);
             TextOut(hdc, 10, 30, timeRemainingString, strlen(timeRemainingString));
             return 0;
+        }
 
-            case WM_KEYDOWN:
+        case WM_KEYDOWN:
+        {
+            if (wParam == VK_F2)
             {
-                if (wParam == VK_F2)
+                if(gameStarted)
                 {
-                    if(gameStarted)
+                    stopGame(hWnd);
+                } 
+                else {
+                    startGame(hWnd);
+                }
+            }
+
+            if (gameStarted)
+            {
+                if (wParam == VK_LEFT)
+                {
+                    printf("Pressed left\n");
+                    if (fallingArrows[1] == 0)
                     {
-                        stopGame(hWnd);
+                        printf("Left Hit");
+                        stateOfLastAction = 1;
+                    } 
+                    else
+                    {
+                        printf("Left Miss");
+                        stateOfLastAction = 2;
+                    }
+                }
+                else if (wParam == VK_RIGHT)
+                {
+                    printf("Pressed right\n");
+                    if (fallingArrows[1] == 1)
+                    {
+                        printf("Right Hit");
+                        stateOfLastAction = 1;
+                    } 
+                    else
+                    {
+                        printf("Right Miss");
+                        stateOfLastAction = 2;
+                    }
+                } 
+                else if (wParam == VK_UP)
+                {
+                    printf("Pressed up\n"); 
+                    if (fallingArrows[1] == 2)
+                    {
+                        printf("Up Hit");
+                        stateOfLastAction = 1;
                     } 
                     else {
-                        startGame(hWnd);
+                        printf("Up Miss");
+                        stateOfLastAction = 2;
                     }
+                }
+                else if (wParam == VK_DOWN)
+                {
+                    printf("Pressed down\n");
+                    if(fallingArrows[1] == 3){
+                        printf("Down Hit");
+                        stateOfLastAction = 1;
+                    } else {
+                        printf("Down Miss");
+                        stateOfLastAction = 2;
+                    }
+                }
+                else {
+                    printf("Arrow keys only la");
+                    stateOfLastAction = 0;
+                }
+            }
+            InvalidateRect(hWnd, NULL, FALSE);
+            return 0;
+        }
+
+        case WM_COMMAND:
+        {
+            WORD id = wParam;
+
+            switch (id)
+            {
+                case ID_HELP_ABOUT:
+                {
+                    ShowAboutDialog(hWnd);
+                    printf("show Dialog\n");
+                    return 0;
                 }
 
-                if (gameStarted)
+                case ID_FILE_EXIT:
                 {
-                    if (wParam == VK_LEFT)
-                    {
-                        printf("Pressed left\n");
-                        if (fallingArrows[1] == 0)
-                        {
-                            printf("Left Hit");
-                            stateOfLastAction = 1;
-                        } 
-                        else
-                        {
-                            printf("Left Miss");
-                            stateOfLastAction = 2;
-                        }
-                    }
-                    else if (wParam == VK_RIGHT)
-                    {
-                        printf("Pressed right\n");
-                        if (fallingArrows[1] == 1)
-                        {
-                            printf("Right Hit");
-                            stateOfLastAction = 1;
-                        } 
-                        else
-                        {
-                            printf("Right Miss");
-                            stateOfLastAction = 2;
-                        }
-                    } 
-                    else if (wParam == VK_UP)
-                    {
-                        printf("Pressed up\n"); 
-                        if (fallingArrows[1] == 2)
-                        {
-                            printf("Up Hit");
-                            stateOfLastAction = 1;
-                        } 
-                        else {
-                            printf("Up Miss");
-                            stateOfLastAction = 2;
-                        }
-                    }
-                    else if (wParam == VK_DOWN)
-                    {
-                        printf("Pressed down\n");
-                        if(fallingArrows[1] == 3){
-                            printf("Down Hit");
-                            stateOfLastAction = 1;
-                        } else {
-                            printf("Down Miss");
-                            stateOfLastAction = 2;
-                        }
-                    }
-                    else {
-                        printf("Arrow keys only la");
-                        stateOfLastAction = 0;
-                    }
+                    DestroyWindow(hWnd);
+                    return 0;
                 }
-                InvalidateRect(hWnd, NULL, FALSE);
-                return 0;
             }
+            break;
         }
 
         case WM_GETMINMAXINFO:
